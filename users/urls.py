@@ -40,4 +40,6 @@ urlpatterns = [
         views.contact_user,
         name="api_contact_user",
     ),
+    re_path(r"^api/v1/registration$", views.RegistrationSettings.as_view(), name="api_registration_settings"),
+    re_path(r"^api/v1/registration/$", views.RegistrationSettings.as_view()),
 ]

@@ -252,6 +252,8 @@ to hide button:
 REGISTER_ALLOWED = False
 ```
 
+Note that the register button is also hidden when registration is disabled at runtime (see 5.21).
+
 
 ### 5.7 Show or hide the upload media button
 
@@ -412,11 +414,22 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 5
 
 ### 5.21 Disallow user registration
 
-set the following variable to False
+There are two ways to control whether users can register on their own.
+
+The static option, set the following variable to False on `local_settings.py` (requires a restart to apply):
 
 ```
 USERS_CAN_SELF_REGISTER = True
 ```
+
+The runtime option: administrators can enable/disable registration at any time, without a restart, either through the Django admin (Portal User Settings) or through the API:
+
+```
+POST /api/v1/registration
+{"enabled": false}
+```
+
+When self-registration is disabled, the register button is hidden and signup attempts are rejected. Managers and admins can always create users while self-registration is disabled, through the API (`POST /api/v1/users`) or the Django admin.
 
 ### 5.22 Configure notifications
 

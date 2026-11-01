@@ -33,6 +33,7 @@ from lti.models import (
 )
 from migrationservice.models import MigrationRecord, MigrationService
 from rbac.models import RBACGroup
+from users.models import PortalUserSettings
 
 PASSWORD = "admin-smoke-password"
 
@@ -83,6 +84,7 @@ def build_instances(superuser):
         VideoTrimRequest: VideoTrimRequest.objects.create(media=media, video_action="replace", timestamps=[{"startTime": 0, "endTime": 1}]),
         TranscriptionRequest: TranscriptionRequest.objects.create(media=media),
         superuser.__class__: superuser,
+        PortalUserSettings: PortalUserSettings.get_solo(),
         LTIPlatform: platform,
         LTIResourceLink: resource_link,
         LTIUserMapping: LTIUserMapping.objects.create(platform=platform, lti_user_id="lti-sub", user=superuser),

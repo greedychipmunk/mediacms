@@ -3,6 +3,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 
+from .models import user_registration_enabled
+
 
 class MyAccountAdapter(DefaultAccountAdapter):
     def get_email_confirmation_url(self, request, emailconfirmation):
@@ -22,7 +24,7 @@ class MyAccountAdapter(DefaultAccountAdapter):
         return email
 
     def is_open_for_signup(self, request):
-        return settings.USERS_CAN_SELF_REGISTER
+        return settings.USERS_CAN_SELF_REGISTER and user_registration_enabled()
 
     def send_mail(self, template_prefix, email, context):
         msg = self.render_mail(template_prefix, email, context)

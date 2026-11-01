@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.db import models
 from django.db.models.signals import post_delete, post_save
@@ -285,6 +286,68 @@ class Channel(models.Model):
     @property
     def edit_url(self):
         return self.get_absolute_url(edit=True)
+
+
+REGISTRATION_ENABLED_CACHE_KEY = "user_registration_enabled"
+
+
+class PortalUserSettings(models.Model):
+    """Singleton holding runtime-editable portal user settings.
+
+    Stores settings that administrators can change at runtime, without
+    editing local_settings.py or restarting MediaCMS. Currently holds the
+    self-registration toggle; more toggles can be added over time.
+    """
+
+    user_registration_enabled = models.BooleanField(
+        "User registration enabled",
+        default=True,
+        help_text=("Whether users can register new accounts on their own. " "Managers and admins can always create users through the API or the Django admin."),
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="portal_settings_updated",
+    )
+
+    class Meta:
+        verbose_name = "Portal User Settings"
+        verbose_name_plural = "Portal User Settings"
+
+    def save(self, *args, **kwargs):
+        # enforce a single settings row
+        self.pk = 1
+        super(PortalUserSettings, self).save(*args, **kwargs)
+        cache.delete(REGISTRATION_ENABLED_CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        super(PortalUserSettings, self).delete(*args, **kwargs)
+        cache.delete(REGISTRATION_ENABLED_CACHE_KEY)
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Portal user settings"
+
+
+def user_registration_enabled():
+    """Whether the runtime self-registration toggle is on.
+
+    The static USERS_CAN_SELF_REGISTER setting is checked separately at each
+    call site, so file-based policy stays authoritative: the runtime toggle
+    can only restrict registration further or re-open it, never override a
+    portal that is statically closed.
+    """
+    return cache.get_or_set(
+        REGISTRATION_ENABLED_CACHE_KEY,
+        lambda: PortalUserSettings.get_solo().user_registration_enabled,
+    )
 
 
 @receiver(post_save, sender=User)
