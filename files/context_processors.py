@@ -8,6 +8,9 @@ from .methods import is_mediacms_editor, is_mediacms_manager
 
 def stuff(request):
     """Pass settings to the frontend"""
+    # local import to avoid circular imports between the files and users apps
+    from users.models import user_registration_enabled
+
     ret = {}
     ret["FRONTEND_HOST"] = request.build_absolute_uri('/').rstrip('/')
     ret["DEFAULT_THEME"] = settings.DEFAULT_THEME
@@ -21,7 +24,7 @@ def stuff(request):
     ret["PORTAL_DESCRIPTION"] = settings.PORTAL_DESCRIPTION
     ret["LOAD_FROM_CDN"] = settings.LOAD_FROM_CDN
     ret["CAN_LOGIN"] = settings.LOGIN_ALLOWED
-    ret["CAN_REGISTER"] = settings.REGISTER_ALLOWED
+    ret["CAN_REGISTER"] = settings.REGISTER_ALLOWED and user_registration_enabled()
     ret["CAN_UPLOAD_MEDIA"] = settings.UPLOAD_MEDIA_ALLOWED
     ret["TIMESTAMP_IN_TIMEBAR"] = settings.TIMESTAMP_IN_TIMEBAR
     ret["CAN_MENTION_IN_COMMENTS"] = settings.ALLOW_MENTION_IN_COMMENTS

@@ -13,7 +13,7 @@ from files.admin import CategoryAdminForm, PageAdminForm
 from files.models import Category, EncodeProfile, Encoding, Media
 from files.tests import create_account, create_media
 from rbac.models import RBACGroup
-from users.models import User
+from users.models import PortalUserSettings, User
 
 PASSWORD = "admin-files-password"
 
@@ -226,6 +226,7 @@ class UserAdminTest(TestCase):
                 importlib.reload(users.admin)
             approval_admin = site._registry[User]
             site.unregister(User)
+            site.unregister(PortalUserSettings)
             importlib.reload(users.admin)
         self.assertIn("is_approved", approval_admin.list_display)
         self.assertIn("is_approved", approval_admin.list_filter)

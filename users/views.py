@@ -27,7 +27,7 @@ from cms.permissions import IsUserOrManager
 from files.methods import is_mediacms_editor, is_mediacms_manager
 
 from .forms import ChannelForm, UserForm
-from .models import Channel, User
+from .models import Channel, PortalUserSettings, User, user_registration_enabled
 from .serializers import LoginSerializer, UserDetailSerializer, UserSerializer
 
 
@@ -288,6 +288,61 @@ class UserList(APIView):
 
         serializer = UserSerializer(user, context={"request": request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RegistrationSettings(APIView):
+    """Runtime enable/disable of user self-registration.
+
+    Only administrators can view or change this setting. Disabling
+    self-registration never blocks managers or admins from creating users
+    directly through the API or the Django admin.
+    """
+
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = (JSONParser, FormParser)
+
+    @swagger_auto_schema(
+        tags=["Users"],
+        operation_summary="Get registration settings",
+        operation_description="Whether user self-registration is currently enabled. Only for administrators.",
+        responses={200: "Whether self-registration is enabled", 403: "Forbidden"},
+    )
+    def get(self, request, format=None):
+        if not request.user.is_superuser:
+            raise PermissionDenied("Only administrators can view registration settings.")
+        return Response({"enabled": user_registration_enabled()}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["enabled"],
+            properties={
+                "enabled": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN,
+                    description="Whether user self-registration is enabled",
+                )
+            },
+        ),
+        tags=["Users"],
+        operation_summary="Set registration settings",
+        operation_description=("Enable or disable user self-registration. Only for administrators. " "Managers and admins can always create users directly, regardless of this setting."),
+        responses={200: "Whether self-registration is enabled", 400: "Invalid value", 403: "Forbidden"},
+    )
+    def post(self, request, format=None):
+        if not request.user.is_superuser:
+            raise PermissionDenied("Only administrators can modify registration settings.")
+
+        enabled = request.data.get("enabled")
+        if isinstance(enabled, str):
+            enabled = {"true": True, "false": False}.get(enabled.strip().lower())
+        if not isinstance(enabled, bool):
+            return Response({"detail": "enabled must be true or false."}, status=status.HTTP_400_BAD_REQUEST)
+
+        portal_settings = PortalUserSettings.get_solo()
+        portal_settings.user_registration_enabled = enabled
+        portal_settings.updated_by = request.user
+        portal_settings.save()
+        return Response({"enabled": user_registration_enabled()}, status=status.HTTP_200_OK)
 
 
 class UserDetail(APIView):
