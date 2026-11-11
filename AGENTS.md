@@ -81,6 +81,12 @@ docker compose -f docker-compose-dev.yaml exec -T frontend npm run test -- --ci
 
 This repo uses **semantic-release with Conventional Commits** (`.releaserc.json`). Commit messages must use types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `depr`. Releases are automated from `main` — do not manually bump versions or edit `CHANGELOG.md`.
 
+## Pull requests
+
+- PR titles follow the commit conventions above (enforced by CI).
+- Fill the AI assistance disclosure in the PR template honestly: list yourself as an AI tool and describe what you did.
+- Never tick the attestation checkbox on the human's behalf — that is their personal statement of responsibility.
+
 ## Testing Notes
 
 - `pytest.ini` uses `cms/test_settings.py` as the Django settings module.
