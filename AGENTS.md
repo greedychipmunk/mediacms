@@ -147,3 +147,7 @@ Django templates load bundles from `static/js/<name>.js`. After `npm run dist`, 
 - `CODE_OF_CONDUCT.md` — required reading before contributing
 
 The docs files above are large — load only the section you need (grep for the heading) rather than the whole file.
+
+## Agent skills
+
+Per-domain agent skills live in `skills/<name>/SKILL.md` — see `skills/README.md` for the attribution and index. The domain skills apply to work on this fork; the fork-governance skills are reference-only.
