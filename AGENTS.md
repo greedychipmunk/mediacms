@@ -150,4 +150,4 @@ The docs files above are large — load only the section you need (grep for the 
 
 ## Agent skills
 
-Per-domain agent skills live in `skills/<name>/SKILL.md` — see `skills/README.md` for the attribution and index. The domain skills apply to work on this fork; the fork-governance skills are reference-only.
+Per-domain agent skills live in `skills/<name>/SKILL.md` — see `skills/README.md` for the attribution and index. The domain skills apply to work on this fork; `skills/fork-maintainer/` governs this fork's workflow; the imported fork-governance skills are reference-only.

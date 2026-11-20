@@ -29,12 +29,18 @@ live in. All credit for their content belongs to the original authors.
 | `auth-identity` | django-allauth, login options, OAuth/social, SAML |
 | `issue-triage` | Issue triage and minimal-impact fix planning |
 
-### Fork-governance skills — reference only on this fork
+### This fork's governance — applies here
 
-The four skills below document the **source fork's** process (branch targets, release
-channels, plan archives). They are kept for reference and credit; their rules do **not**
-apply here. On this fork, the workflow rules in `AGENTS.md` and this repository's PR
-conventions govern.
+| Skill | Covers |
+|---|---|
+| `fork-maintainer` | This fork's workflow: branch/PR flow against fork main, the no-upstream-PR policy, PR template disclosure/attestation ownership, commit trailers, AGENTS.md parity with upstream PR #1620 |
+
+### Imported fork-governance skills — reference only on this fork
+
+The four skills below document the **source fork's** (mrjoshuap-hq) process (branch targets,
+release channels, plan archives). They are kept for reference and credit; their rules do **not**
+apply here. On this fork, the workflow rules in `AGENTS.md`, this repository's PR conventions,
+and `skills/fork-maintainer/` govern.
 
 | Skill | Documents (source fork) |
 |---|---|
