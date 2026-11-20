@@ -41,3 +41,13 @@ CELERY_RESULT_BACKEND = BROKER_URL
 MP4HLS_COMMAND = "/home/mediacms.io/bento4/bin/mp4hls"
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# When the portal is served over HTTPS behind a TLS-terminating reverse
+# proxy (Tailscale Serve in the docker-compose setup), Django needs to
+# know the original scheme: POST requests (login, uploads, comments) are
+# rejected by CSRF origin checking otherwise. Tailscale Serve overwrites
+# (not appends) the X-Forwarded-* headers, so the header is trustworthy.
+# Only active when FRONTEND_HOST is an https:// URL.
+if FRONTEND_HOST.startswith("https://"):
+    CSRF_TRUSTED_ORIGINS = [FRONTEND_HOST]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

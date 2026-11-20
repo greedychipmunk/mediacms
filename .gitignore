@@ -1,4 +1,5 @@
 cli-tool/.env
+.env
 frontend/package-lock.json
 media_files/encoded/
 media_files/original/

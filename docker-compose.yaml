@@ -1,6 +1,33 @@
 version: "3"
 
 services:
+  # Tailscale sidecar: joins the tailnet and terminates TLS for the whole
+  # stack. The `web` container shares this service's network namespace, so
+  # MediaCMS is reachable ONLY at https://mediacms.<your-tailnet>.ts.net
+  # (Tailscale Serve proxies HTTPS -> 127.0.0.1:80, certificates are
+  # provisioned automatically). Runs in userspace networking mode (the image
+  # default): no /dev/net/tun or extra capabilities are required, and no
+  # plain-HTTP path exists from the tailnet to the portal.
+  # Configure TS_AUTHKEY and FRONTEND_HOST in a gitignored .env file
+  # (see .env.example).
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: mediacms
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_AUTH_ONCE=true
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - ./deploy/docker/tailscale-serve:/config
+    healthcheck:
+      test: ["CMD", "tailscale", "status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
   migrations:
     image: mediacms/mediacms:latest
     volumes:
@@ -25,8 +52,10 @@ services:
     image: mediacms/mediacms:latest
     deploy:
       replicas: 1
-    ports:
-      - "80:80"
+    # Shares the tailscale sidecar's network namespace: nginx's port 80 is
+    # served via Tailscale Serve at https://mediacms.<your-tailnet>.ts.net.
+    # No ports are published - the portal is not reachable over plain HTTP.
+    network_mode: service:tailscale
     volumes:
       - ./:/home/mediacms.io/mediacms/
     environment:
@@ -34,8 +63,10 @@ services:
       ENABLE_CELERY_SHORT: 'no'
       ENABLE_CELERY_LONG: 'no'
       ENABLE_MIGRATIONS: 'no'
+      FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost}
     depends_on:
       - migrations
+      - tailscale
   celery_beat:
     image: mediacms/mediacms:latest
     volumes:
@@ -84,3 +115,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+volumes:
+  tailscale-state:
